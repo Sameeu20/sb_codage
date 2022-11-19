@@ -3,62 +3,71 @@ import java.util.*;
 import java.text.*;
 import java.math.*;
 import java.util.regex.*;
-
-class calc{
-
-public int trap(int[] height) {
-    int result = 0;
- 
-    if(height==null || height.length<=2)
-        return result;
- 
-    int left[] = new int[height.length];
-    int right[]= new int[height.length];
-    int max = height[0];
-    left[0] = height[0];
-    for(int i=1; i<height.length; i++){
-        if(height[i]<max){
-            left[i]=max;
-        }else{
-            left[i]=height[i];
-            max = height[i];
+class mushroom {
+    public int mushroomPickup(int[][] grid) {
+        int ans = 0;
+        int[][] path = bestPath(grid);
+        if (path == null) return 0;
+        for (int[] step: path) {
+            ans += grid[step[0]][step[1]];
+            grid[step[0]][step[1]] = 0;
         }
+
+        for (int[] step: bestPath(grid))
+            ans += grid[step[0]][step[1]];
+
+        return ans;
     }
- 
-    //scan from right to left
-    max = height[height.length-1];
-    right[height.length-1]=height[height.length-1];
-    for(int i=height.length-2; i>=0; i--){
-        if(height[i]<max){
-            right[i]=max;
-        }else{
-            right[i]=height[i];
-            max = height[i];
+
+    public int[][] bestPath(int[][] grid) {
+        int N = grid.length;
+        int[][] dp = new int[N][N];
+        for (int[] row: dp) Arrays.fill(row, Integer.MIN_VALUE);
+        dp[N-1][N-1] = grid[N-1][N-1];
+        for (int i = N-1; i >= 0; --i) {
+            for (int j = N-1; j >= 0; --j) {
+                if (grid[i][j] >= 0 && (i != N-1 || j != N-1)) {
+                    dp[i][j] = Math.max(i+1 < N ? dp[i+1][j] : Integer.MIN_VALUE,
+                                        j+1 < N ? dp[i][j+1] : Integer.MIN_VALUE);
+                    dp[i][j] += grid[i][j];
+                }
+            }
         }
+        if (dp[0][0] < 0) 
+            return null;
+        int[][] ans = new int[2*N - 1][2];
+        int i = 0, j = 0, t = 0;
+        while (i != N-1 || j != N-1) 
+        {
+            if (j+1 == N || i+1 < N && dp[i+1][j] >= dp[i][j+1]) i++;
+            else j++;
+
+            ans[t][0] = i;
+            ans[t][1] = j;
+            t++;
+        }
+        return ans;
     }
- 
-    //calculate totoal
-    for(int i=0; i<height.length; i++){
-        result+= Math.min(left[i],right[i])-height[i];
-    }
- 
-    return result;
 }
-}
+
 public class Solution {
 
     public static void main(String[] args) {
         /* Enter your code here. Read input from STDIN. Print output to STDOUT. Your class should be named Solution. */
         Scanner sc=new Scanner(System.in);
-         calc x=new calc();
+        mushroom x=new mushroom();
         int n=sc.nextInt();
-                int[] height = new int[n];
+        int[][] grid = new int[n][n];
         for(int i=0;i<n;i++)
         {
-                height[i]=sc.nextInt();
+            for(int j=0;j<n;j++)
+            {
+                grid[i][j]=sc.nextInt();
                 
             }
-        int waterTrapped=x.trap(height);
-        System.out.println(waterTrapped);     
+        }
+        int collection=x.mushroomPickup(grid);
+        System.out.println(collection);
+        
     }
 }
